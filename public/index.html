@@ -138,10 +138,7 @@ Enter a medicine name above.
 
 <script>
 
-const HF_API_KEY = process.env.HF_API_KEY;
-const HF_MODEL = "Qwen/Qwen2.5-7B-Instruct";
-
-const API_URL = "https://router.huggingface.co/v1/chat/completions";
+const API_URL = "/api/medicine";
 
 const input = document.getElementById("medicine-input");
 const button = document.getElementById("search-btn");
@@ -154,6 +151,7 @@ output.textContent="Please enter a medicine name.";
 return;
 }
 
+output.classList.remove("error");
 output.textContent="Generating response...";
 
 try{
@@ -162,7 +160,6 @@ const prompt = `
 Provide simple educational information about the medicine "${name}".
 
 Include:
-
 • What the medicine is
 • Common uses
 • Available forms
@@ -177,11 +174,9 @@ End with:
 const response = await fetch(API_URL,{
 method:"POST",
 headers:{
-"Authorization":`Bearer ${HF_API_KEY}`,
 "Content-Type":"application/json"
 },
 body:JSON.stringify({
-model:HF_MODEL,
 messages:[
 {
 role:"system",
@@ -191,9 +186,7 @@ content:"You are a helpful medical information assistant."
 role:"user",
 content:prompt
 }
-],
-max_tokens:200,
-temperature:0.7
+]
 })
 });
 
@@ -206,17 +199,7 @@ const result = await response.json();
 let text="";
 
 if(result && result.choices && result.choices.length>0){
-
-const choice=result.choices[0];
-
-if(choice.message && choice.message.content){
-text=choice.message.content;
-}
-
-else if(choice.text){
-text=choice.text;
-}
-
+text=result.choices[0].message.content;
 }
 
 if(!text){
